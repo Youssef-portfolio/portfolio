@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youssef Idbeben | Elite Portfolio</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --black: #050505;
+            --gold: #ffcc00;
+            --white: #ffffff;
+            --thumb-w: 120px; 
+            --thumb-h: 170px;
+        }
+
+        *{ margin: 0; padding: 0; box-sizing: border-box; }
+        body, html {
+            background-color: var(--black);
+            color: var(--white);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+            scroll-behavior: smooth;
+        }
+
+        /* --- BACKGROUND VIDEOS --- */
+        .video-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -5; opacity: 0.5;
+        }
+
+        #cursorLogo {
+            position: fixed; width: 25px; pointer-events: none;
+            z-index: 10000; transform: translate(-50%, -50%);
+            opacity: 0; transition: opacity 0.5s;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            height: 100vh; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center;
+            perspective: 1000px;
+        }
+        #mainLogo { 
+            width: 140px; 
+            opacity: 0; 
+            transform: translateX(-1000px) scale(0.1) rotateY(-90deg); 
+        }
+        #mainTitle { 
+            font-family: 'Anton', sans-serif; font-size: 70px; 
+            text-transform: uppercase; letter-spacing: 10px;
+            opacity: 0; margin-top: 20px; text-align: center;
+        }
+
+        /* --- SECTIONS --- */
+        section { padding: 120px 8%; position: relative; z-index: 10; }
+        .about, .contact-section {
+            max-width: 900px; margin: 0 auto;
+            opacity: 0; transform: translateY(60px);
+            transition: 1.2s ease;
+        }
+        .show { opacity: 1 !important; transform: translateY(0) !important; }
+        
+        .section-title { font-size: 45px; color: var(--gold); margin-bottom: 30px; font-family: 'Anton', sans-serif; letter-spacing: 2px; }
+        p { font-size: 18px; line-height: 1.6; opacity: 0.9; }
+
+        /* --- CONTACT PART --- */
+        .contact-content { text-align: center; }
+        .contact-link { 
+            display: block; 
+            font-size: 24px; 
+            color: var(--white); 
+            text-decoration: none; 
+            margin: 15px 0; 
+            transition: 0.3s; 
+            font-family: 'Anton', sans-serif;
+            letter-spacing: 1px;
+        }
+        .contact-link:hover { color: var(--gold); transform: scale(1.05); }
+
+        /* --- 3D RING --- */
+        .cinema-viewport {
+            height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;
+            perspective: 2000px;
+        }
+        .ring-3d { position: relative; width: var(--thumb-w); height: var(--thumb-h); transform-style: preserve-3d; }
+        .project-thumb {
+            position: absolute; width: var(--thumb-w); height: var(--thumb-h);
+            border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer; backface-visibility: hidden; transition: 0.3s;
+        }
+        .project-thumb img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7); }
+        .project-thumb:hover { border: 2px solid var(--gold); transform: scale(1.1) !important; z-index: 100; }
+
+        /* --- EXPLORE PAGE --- */
+        #explore-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--black); z-index: 8000; display: none; overflow-y: auto;
+        }
+        .category-content { position: relative; z-index: 2; padding: 100px 5%; }
+        
+        .explore-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 40px; max-width: 1400px; margin: 0 auto; 
+        }
+        .grid-item { 
+            height: 400px; border-radius: 16px; overflow: hidden; 
+            border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+            opacity: 0; transform: scale(0.85); transition: 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .grid-item.show { opacity: 1; transform: scale(1); }
+        .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
+        .grid-item:hover img { transform: scale(1.1); }
+
+        /* --- VIEWER --- */
+        .viewer-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.97);
+            display: none; justify-content: center; align-items: center; 
+            z-index: 9999; perspective: 1500px;
+        }
+        #viewerCard { transform-style: preserve-3d; transition: transform 0.1s; display: inline-block; }
+        #fullImg { max-width: 90vw; max-height: 90vh; width: auto; height: auto; border-radius: 10px; box-shadow: 0 0 50px #000; }
+
+        .close-btn { position: fixed; top: 30px; right: 40px; font-size: 3rem; color: var(--gold); cursor: pointer; z-index: 10001; }
+        .hint { text-align: center; font-size: 11px; letter-spacing: 8px; opacity: 0.6; text-transform: uppercase; padding: 60px 0; }
+    </style>
+</head>
+<body>
+
+    <video id="homeVid" class="video-bg" autoplay loop muted playsinline>
+        <source src="video/water_bg.mp4" type="video/mp4">
+    </video>
+
+    <img src="images/logo.png" id="cursorLogo">
+
+    <div class="hero">
+        <img src="images/logo.png" id="mainLogo">
+        <h1 id="mainTitle">YOUSSEF IDBEBEN</h1>
+    </div>
+
+    <section>
+        <div class="about" id="aboutPart">
+            <h2 class="section-title">About Me</h2>
+            <p>I am Youssef IdBeben, a versatile professional designer with expertise in all types of visual design, including branding, graphic design, print, and illustration. I create high-quality, professional designs that not only look striking but are strategically crafted to engage audiences and drive results. Every project I work on is tailored to deliver impact, combining creativity, precision, and a deep understanding of what sells. My passion lies in transforming ideas into visually compelling experiences that elevate brands and leave a lasting impression</p>
+        </div>
+    </section>
+
+    <div class="hint">SCROLL TO DISCOVER / CLICK TO EXPLORE</div>
+    
+    <div class="cinema-viewport">
+        <div class="ring-3d" id="ring"></div>
+    </div>
+
+    <section id="contactSec">
+        <div class="contact-section" id="contactPart">
+            <h2 class="section-title">Contact me for work</h2>
+            <div class="contact-content">
+                <a href="tel:0718763999" class="contact-link">0718763999</a>
+                <a href="mailto:idbebenyoussef@gmail.com" class="contact-link">idbebenyoussef@gmail.com</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="explore-overlay">
+        <span class="close-btn" onclick="closeExplore()">✕</span>
+        <video id="exploreVid" class="video-bg" loop muted playsinline>
+            <source src="video/flame_bg.mp4" type="video/mp4">
+        </video>
+        <div class="category-content" id="category-container"></div>
+    </div>
+
+    <div class="viewer-modal" id="viewerModal" onclick="closeViewer()">
+        <div id="viewerCard"><img src="" id="fullImg"></div>
+    </div>
+
+    <script>
+        // 1. INTRO ANIMATION
+        gsap.to("#mainLogo", { opacity: 1, x: 0, scale: 1, rotationY: 0, duration: 2, ease: "power3.out" });
+        gsap.to("#mainTitle", { opacity: 1, duration: 1.5, delay: 0.8 });
+        setTimeout(() => { document.getElementById('cursorLogo').style.opacity = "1"; }, 1500);
+
+        // 2. SCROLL REVEAL (ABOUT & CONTACT)
+        window.addEventListener("scroll", () => {
+            const about = document.getElementById('aboutPart');
+            const contact = document.getElementById('contactPart');
+            
+            if(about.getBoundingClientRect().top < window.innerHeight - 100) {
+                about.classList.add('show');
+            }
+            if(contact.getBoundingClientRect().top < window.innerHeight - 100) {
+                contact.classList.add('show');
+            }
+        });
+
+        // 3. PROJECT DATA & GENERATION
+        const projectGroups = [
+            {start:1, end:4, title:"LOGOS"}, {start:5, end:11, title:"ART"},
+            {start:12, end:17, title:"SPORT"}, {start:18, end:19, title:"THUMBNAILS"},
+            {start:20, end:23, title:"MUSIC POSTERS"}, {start:24, end:32, title:"VINTAGE POSTERS"},
+            {start:33, end:42, title:"TSHIRTS"}
+        ];
+
+        const ring = document.getElementById('ring');
+        const catCont = document.getElementById('category-container');
+        let totalID = 1;
+
+        projectGroups.forEach(g => {
+            const wrap = document.createElement('div');
+            wrap.className = 'group-container';
+            wrap.id = `cat-${g.title}`;
+            wrap.innerHTML = `<h2 class="section-title" style="text-align:center; margin-bottom:50px;">${g.title}</h2>`;
+            const grid = document.createElement('div');
+            grid.className = 'explore-grid';
+
+            for(let i=g.start; i<=g.end; i++){
+                const thumb = document.createElement('div');
+                thumb.className = 'project-thumb';
+                thumb.style.transform = `rotateY(${(totalID-1)*(360/42)}deg) translateZ(850px)`;
+                thumb.innerHTML = `<img src="images/project${i}.jpg">`;
+                thumb.onpointerdown = () => openExplore(`cat-${g.title}`);
+                ring.appendChild(thumb);
+
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.innerHTML = `<img src="images/project${i}.jpg">`;
+                item.onclick = (e) => { e.stopPropagation(); openViewer(`images/project${i}.jpg`); };
+                grid.appendChild(item);
+                totalID++;
+            }
+            wrap.appendChild(grid);
+            catCont.appendChild(wrap);
+        });
+
+        // 4. MOUSE LOGIC
+        const cursor = document.getElementById('cursorLogo');
+        let tX = 0, cX = 0, isOpening = false;
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+            if(!isOpening) tX = ((e.clientX / window.innerWidth) - 0.5) * 360;
+            
+            if(document.getElementById('viewerModal').style.display === 'flex') {
+                const card = document.getElementById('viewerCard');
+                const rotX = (window.innerHeight / 2 - e.clientY) / 15;
+                const rotY = (e.clientX - window.innerWidth / 2) / 15;
+                card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            }
+        });
+
+        function loop() { 
+            if(!isOpening) { cX += (tX - cX) * 0.08; ring.style.transform = `rotateY(${-cX}deg)`; }
+            requestAnimationFrame(loop); 
+        }
+        loop();
+
+        // 5. NAVIGATION
+        function openExplore(id) {
+            isOpening = true;
+            const overlay = document.getElementById('explore-overlay');
+            overlay.style.display = 'block';
+            document.getElementById('exploreVid').play();
+            document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+                const target = document.getElementById(id);
+                if(target) target.scrollIntoView({ behavior: 'smooth' });
+                document.querySelectorAll('.grid-item').forEach((item, index) => {
+                    setTimeout(() => { item.classList.add('show'); }, index * 40);
+                });
+            }, 150);
+        }
+
+        function closeExplore() { 
+            document.getElementById('explore-overlay').style.display = 'none'; 
+            document.getElementById('exploreVid').pause();
+            document.body.style.overflow = 'auto'; 
+            isOpening = false;
+            document.querySelectorAll('.grid-item').forEach(item => item.classList.remove('show'));
+        }
+
+        function openViewer(src) { 
+            document.getElementById('fullImg').src = src; 
+            document.getElementById('viewerModal').style.display = 'flex'; 
+        }
+        function closeViewer() { document.getElementById('viewerModal').style.display = 'none'; }
+    </script>
+</body>
+</html>
